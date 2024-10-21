@@ -42,9 +42,11 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
+        console.log(`Serving from cache: ${event.request.url}`); // Log when serving from cache
         return cachedResponse; // Return cached response if available
       }
 
+      console.log(`Fetching from network: ${event.request.url}`); // Log when fetching from network
       // Fetch from network if not cached, and cache the response
       return fetch(event.request)
         .then((response) => {
@@ -74,7 +76,16 @@ self.addEventListener("fetch", (event) => {
 // Cache eviction logic (FIFO strategy)
 async function manageCacheEviction(cache) {
   const keys = await cache.keys();
+
+  console.log(
+    `Cache size: ${keys.length}, Max size allowed: ${MAX_CACHE_ITEMS}`
+  );
+
   if (keys.length > MAX_CACHE_ITEMS) {
-    await cache.delete(keys[0]); // Remove the oldest cache item
+    const evictedKey = keys[0]; // This would be FIFO logic
+    await cache.delete(evictedKey); // Remove the oldest cache item
+    console.log(`Evicted cache item: ${evictedKey.url}`);
+  } else {
+    console.log("No eviction needed.");
   }
 }
